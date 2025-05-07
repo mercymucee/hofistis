@@ -1,64 +1,120 @@
-import React, { useContext } from 'react';
-import { CartContext } from './CartContext';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import React, { useState, useEffect } from 'react';
 
 const Cart = () => {
-  const { cart, removeFromCart, clearCart } = useContext(CartContext);
-  const navigate = useNavigate(); // Initialize navigate
+  // Initialize cartItems state directly in Cart.jsx (from localStorage if available)
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem('cartItems');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  // Save cartItems to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Add product to cart (handling quantity)
+  const addToCart = (product) => {
+    setCartItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((item) => item.id === product.id);
+      if (existingItemIndex !== -1) {
+        // If item already exists, increase quantity
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex].quantity += 1;
+        return updatedItems;
+      }
+      // If item doesn't exist, add new item with quantity = 1
+      return [...prevItems, { ...product, quantity: 1 }];
+    });
+  };
+
+  // Remove a product based on product ID
+  const removeFromCart = (productId) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+  };
+
+  // Handle remove button click with confirmation
+  const handleRemove = (productId) => {
+    const confirmRemove = window.confirm('Are you sure you want to remove this item from your cart?');
+    if (confirmRemove) {
+      removeFromCart(productId);
+    }
+  };
+
+  // Calculate subtotal
+  const calculateSubtotal = () => {
+    return cartItems.reduce((total, item) => total + item.product_cost * item.quantity, 0);
+  };
 
   return (
-    <div className="container">
-      <h1>Your Cart</h1>
+    <div className="container py-4">
+      <h1 className="mb-4 text-center" style={{ color: '#28a745' }}>
+        Your Cart
+      </h1>
 
-      {/* Fallback message if the cart is empty */}
-      {cart.length === 0 ? (
-        <p>Your cart is empty. Add items to your cart to proceed.</p>
+      {cartItems.length === 0 ? (
+        <p>Your cart is empty.</p>
       ) : (
         <div>
-          <ul className="list-group">
-            {/* Mapping over cart items */}
-            {cart.map((item, index) => (
-              <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
-                  {/* Product image, name, and cost */}
-                  <img
-                    src={`https://mercymucee.pythonanywhere.com/static/images/${item.product_photo}`}
-                    alt={item.product_name}
-                    className="product-img"
-                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', marginRight: '10px' }}
-                  />
-                  <span>{item.product_name} - {item.product_cost}</span>
-                </div>
-
-                {/* Remove button */}
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => removeFromCart(item.id)}
+          <div className="row">
+            {cartItems.map((item) => (
+              <div className="col-md-4 col-lg-3 mb-4" key={item.id}>
+                <div
+                  className="card shadow-sm h-100"
+                  style={{
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    backgroundColor: '#f8f9fa',
+                  }}
                 >
-                  Remove
-                </button>
-              </li>
+                  <img
+                    src={'https://mercymucee.pythonanywhere.com/static/images/' + item.product_photo}
+                    alt={item.product_name}
+                    className="card-img-top"
+                    style={{ height: '220px', objectFit: 'cover' }}
+                  />
+
+                  <div className="card-body d-flex flex-column">
+                    <h5>{item.product_name}</h5>
+                    <p style={{ fontSize: '0.9rem' }}>{item.product_description}</p>
+                    <b style={{ color: '#ffc107' }}>
+                      {new Intl.NumberFormat('en-KE', {
+                        style: 'currency',
+                        currency: 'KES',
+                      }).format(item.product_cost)}
+                    </b>
+
+                    {/* Quantity Selector */}
+                    <div className="d-flex align-items-center mt-2">
+                      <span>Quantity: {item.quantity}</span>
+                    </div>
+
+                    {/* Purchase Now Button */}
+                    <button
+                      className="btn mt-3 text-white"
+                      style={{ backgroundColor: '#28a745' }}
+                      onClick={() => alert('Proceeding to Payment')}
+                    >
+                      <span className="me-2">Purchase Now</span>
+                    </button>
+
+                    {/* Remove from cart button */}
+                    <button
+                      className="btn mt-2 btn-outline-danger"
+                      onClick={() => handleRemove(item.id)} // Remove the clicked item only
+                    >
+                      Remove from Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
-
-          {/* Clear Cart button */}
-          <div className="mt-3">
-            <button className="btn btn-warning btn-sm" onClick={clearCart}>
-              Clear Cart
-            </button>
           </div>
 
-          {/* Checkout button */}
-          <div className="mt-3">
-            <button
-              className="btn btn-success btn-sm"
-              onClick={() => navigate('/mpesapayment')} // Navigate to the M-Pesa page
-            >
-              Proceed to Payment
-            </button>
-            <br />
-            <br />
+          {/* Subtotal */}
+          <div className="d-flex justify-content-end mt-3">
+            <h4>Total: {new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(calculateSubtotal())}</h4>
           </div>
+
         </div>
       )}
     </div>

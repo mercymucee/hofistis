@@ -1,14 +1,9 @@
 import { Link } from "react-router-dom";
-import { FaShoppingCart, FaComment } from "react-icons/fa";
-import { useContext } from "react"; // Importing useContext
-import { CartContext } from "./CartContext"; // Import CartContext
+import { FaShoppingCart } from "react-icons/fa";
 
-const Navbar = () => {
-  // Access the cart data from CartContext
-  const { cart } = useContext(CartContext); // Get the cart from context
-
-  // Get the number of items in the cart
-  const cartCount = cart.length;
+const Navbar = ({ cartItems }) => {
+  // Get the number of items in the cart, default to 0 if cartItems is undefined
+  const cartCount = cartItems ? cartItems.length : 0;
 
   return (
     <section className="row">
@@ -37,36 +32,18 @@ const Navbar = () => {
           </button>
           <div className="collapse navbar-collapse" id="mynavbar">
             <div className="navbar-nav">
-              
-              <Link to="/signup" className="nav-link">
-                Sign Up
-              </Link>
-              <Link to="/signin" className="nav-link">
-                Sign In
-              </Link>
-              <Link to="/aboutus" className="nav-link">
-                About Us
-              </Link>
-              <Link to="/contactus" className="nav-link">
-                Contact Us
-              </Link>
-              <Link to="/addproducts" className="nav-link">
-                Upload Products
-              </Link>
-              {/* Add the FAQ link */}
-              <Link to="/faqs" className="nav-link">
-                FAQs
-              </Link>
-              <Link to="/review" className="nav-link">
-               Review
-              </Link>
-              
-             
+              <Link to="/signup" className="nav-link">Sign Up</Link>
+              <Link to="/signin" className="nav-link">Sign In</Link>
+              <Link to="/aboutus" className="nav-link">About Us</Link>
+              <Link to="/contactus" className="nav-link">Contact Us</Link>
+              <Link to="/addproducts" className="nav-link">Upload Products</Link>
+              <Link to="/faqs" className="nav-link">FAQs</Link>
+              <Link to="/review" className="nav-link">Review</Link>
             </div>
           </div>
 
-          {/* Cart Icon with Badge */}
-          <div className="navbar-nav ms-auto">
+          {/* Commented out Cart Icon with Badge */}
+          {/* <div className="navbar-nav ms-auto">
             <Link to="/cart" className="nav-link" style={{ position: "relative" }}>
               <FaShoppingCart size={24} />
               {cartCount > 0 && (
@@ -84,9 +61,7 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
-
-           
-          </div>
+          </div> */}
         </nav>
       </div>
     </section>
